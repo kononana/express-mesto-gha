@@ -1,32 +1,26 @@
 const User = require('../models/user');
 
-
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send(users))
-    .catch((err) => res.status(500).send({ message: 'Произошла ошибка', ...err }));
+    .catch((err) => res.status(500).send({ message: err.message }));
 };
-
 
 const getUserById = (req, res) => {
   User.findById(req.params.userId)
-    .then((user) => {
-      if (user) {
-        res.status(200).send(user);
-      } else {
-
-        res.status(404).send({ message: 'Пользователь не найден' });
-      }
-    })
+    .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
+      if (err.name === 'CastError') {
         return res.status(400).send({ message: 'Проверьте введенные данные' });
       }
-      return res.status(500).send({ message: 'Произошла ошибка', ...err });
+      if (err.statusCode === 404) {
+        return res.status(404).send({ message: 'Пользователь не найден' });
+      }
+      return res.status(500).send({ message: err.message });
     });
 };
 
-
+// Cоздание пользователя
 const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
@@ -36,7 +30,7 @@ const createUser = (req, res) => {
       if (err.name === 'ValidationError') {
         return res.status(400).send({ message: 'Проверьте введенные данные' });
       }
-      return res.status(500).send({ message: 'Произошла ошибка', ...err });
+      return res.status(500).send({ message: err.message });
     });
 };
 
@@ -54,10 +48,9 @@ const updateUser = (req, res) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
         return res.status(400).send({ message: 'Проверьте введенные данные' });
       }
-      return res.status(500).send({ message: 'Произошла ошибка', ...err });
+      return res.status(500).send({ message: err.message });
     });
 };
-
 
 const updateAvatar = (req, res) => {
   const { avatar } = req.body;
@@ -74,7 +67,7 @@ const updateAvatar = (req, res) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
         return res.status(400).send({ message: 'Проверьте введенные данные' });
       }
-      return res.status(500).send({ message: 'Произошла ошибка', ...err });
+      return res.status(500).send({ message: err.message });
     });
 };
 
