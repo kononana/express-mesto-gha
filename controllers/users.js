@@ -8,17 +8,22 @@ const getUsers = (req, res) => {
 
 const getUserById = (req, res) => {
   User.findById(req.params.userId)
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => {
+      if (user) {
+        res.status(200).send({ data: user });
+      } else {
+        res.status(404).send({ message: 'Пользователь не найден' });
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
         return res.status(400).send({ message: 'Проверьте введенные данные' });
       }
-      if (err.statusCode === 404) {
-        return res.status(404).send({ message: 'Пользователь не найден' });
-      }
       return res.status(500).send({ message: err.message });
     });
 };
+
+
 
 // Cоздание пользователя
 const createUser = (req, res) => {
