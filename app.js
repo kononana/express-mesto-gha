@@ -25,9 +25,7 @@ app.use('/', require('./routes/users'));
 app.use('/', require('./routes/cards'));
 
 app.use((req, res) => {
-  res.status(404).send({ message: 'Страница не найдена' });
+  res.status(404).send({ message: 'страница не найдена' });
 });
 
-app.listen(PORT, () => {
-  console.log(`server listen port ${PORT}`);
-});
+app.listen(PORT);

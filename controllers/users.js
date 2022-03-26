@@ -23,8 +23,6 @@ const getUserById = (req, res) => {
     });
 };
 
-
-
 // Cоздание пользователя
 const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
