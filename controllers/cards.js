@@ -86,8 +86,6 @@ const dislikeCard = (req, res, next) => {
     });
 };
 
-
-
 module.exports = {
   getCards,
   createCard,
