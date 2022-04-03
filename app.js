@@ -1,31 +1,35 @@
 const express = require('express');
+const { errors } = require('celebrate');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const mainRoute = require('./routes/mainRoute');
+const { createUser, login } = require('./controllers/users');
+const auth = require('./middlewares/auth');
+const errorHandler = require('./middlewares/errorHandler');
+const {
+  regValidation, loginValidation,
+} = require('./middlewares/serverValidation');
 
 const { PORT = 3000 } = process.env;
-const app = express();
 
+const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '62330652e670db04062f515f',
-  };
-
-  next();
-});
-
-// подключаемся к серверу mongodb
+// подключаемся к серверу
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
 });
 
-app.use('/', require('./routes/users'));
-app.use('/', require('./routes/cards'));
+app.post('/signup', regValidation, createUser);
+app.post('/signin', loginValidation, login);
 
-app.use((req, res) => {
-  res.status(404).send({ message: 'страница не найдена' });
-});
+app.use(auth);
+
+app.use(mainRoute);
+
+app.use(errors());
+
+app.use(errorHandler);
 
 app.listen(PORT);
