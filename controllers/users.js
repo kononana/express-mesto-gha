@@ -61,7 +61,7 @@ const createUser = (req, res, next) => {
   Users.findOne({ email })
     .then((user) => {
       if (user) {
-        next(new ForbiddenError('Пользователь с таким email уже зарегистрирован'));
+        next(new ForbiddenError(`Пользователь с таким email ${email} уже зарегистрирован`));
       }
       return bcrypt.hash(password, 10);
     })
@@ -91,17 +91,17 @@ const updateUser = (req, res, next) => {
   const { name, about } = req.body;
   Users.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .orFail(() => {
-      throw new BadRequestError('Проверьте введенные данные');
+      throw new BadRequestError('Переданы некорректные данные');
     })
     .then((user) => {
       if (!user) {
-        next(new BadRequestError('Проверьте введенные данные'));
+        next(new BadRequestError('Переданы некорректные данные'));
       }
       res.status(200).send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Проверьте введенные данные'));
+        next(new BadRequestError('Переданы некорректные данные'));
       }
       next(err);
     });
@@ -111,17 +111,17 @@ const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   Users.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .orFail(() => {
-      throw new BadRequestError('Проверьте введенные данные');
+      throw new BadRequestError('Переданы некорректные данные');
     })
     .then((user) => {
       if (!user) {
-        next(new BadRequestError('Проверьте введенные данные'));
+        next(new BadRequestError('Переданы некорректные данные'));
       }
       res.status(200).send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Проверьте введенные данные'));
+        next(new BadRequestError('Переданы некорректные данные'));
       }
       next(err);
     });
@@ -131,7 +131,7 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
   return Users.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
       res.cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,
