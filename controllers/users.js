@@ -22,7 +22,7 @@ const getUserMe = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('Переданы некорректные данные.'));
+        next(new BadRequestError('Проверьте введенные данные.'));
       } else {
         next(err);
       }
@@ -42,7 +42,7 @@ const getUserById = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('Переданы некорректные данные.'));
+        next(new BadRequestError('Проверьте введенные данные.'));
       } else {
         next(err);
       }
@@ -78,7 +78,7 @@ const createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные.'));
+        next(new BadRequestError('Проверьте введенные данные.'));
       } else if (err.code === 11000) {
         next(new ForbiddenError({ message: err.errorMessage }));
       } else {
@@ -91,17 +91,17 @@ const updateUser = (req, res, next) => {
   const { name, about } = req.body;
   Users.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .orFail(() => {
-      throw new BadRequestError('Переданы некорректные данные');
+      throw new BadRequestError('Проверьте введенные данные');
     })
     .then((user) => {
       if (!user) {
-        next(new BadRequestError('Переданы некорректные данные'));
+        next(new BadRequestError('Проверьте введенные данные'));
       }
       res.status(200).send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные'));
+        next(new BadRequestError('Проверьте введенные данные'));
       }
       next(err);
     });
@@ -111,17 +111,17 @@ const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   Users.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .orFail(() => {
-      throw new BadRequestError('Переданы некорректные данные');
+      throw new BadRequestError('Проверьте введенные данные');
     })
     .then((user) => {
       if (!user) {
-        next(new BadRequestError('Переданы некорректные данные'));
+        next(new BadRequestError('Проверьте введенные данные'));
       }
       res.status(200).send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные'));
+        next(new BadRequestError('Проверьте введенные данные'));
       }
       next(err);
     });
@@ -137,11 +137,11 @@ const login = (req, res, next) => {
         httpOnly: true,
         sameSite: true,
       });
-      res.status(201).send({ message: 'Авторизация успешна', token });
+      res.status(200).send({ message: 'Авторизация прошла успешно', token });
     })
     .catch((err) => {
       if (err.message === 'IncorrectEmail') {
-        next(new Unauthorized('Не правильный логин или пароль'));
+        next(new Unauthorized('Неправильный логин или пароль'));
       }
       next(err);
     });

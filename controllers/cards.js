@@ -13,7 +13,7 @@ const createCard = (req, res, next) => {
   Card.create({ name, link, owner: ownerId })
     .then((card) => {
       if (!card) {
-        next(new BadRequestError('Переданы некорректные данные'));
+        next(new BadRequestError('Проверьте введенные данные'));
       }
       res.status(200).send({ data: card });
     })
@@ -60,7 +60,7 @@ const dislikeCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError({ message: 'Переданы некорректные данные' }));
+        next(new BadRequestError({ message: 'Проверьте введенные данные' }));
       }
       next(err);
     });
