@@ -4,7 +4,7 @@ const urlValidation = (value, helpers) => {
   const regex = /^(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/;
 
   if (!regex.test(value)) {
-    return helpers.error('Невалидная ссылка');
+    return helpers.error('Невалидный формат ссылки');
   }
   return value;
 };
@@ -46,10 +46,24 @@ const userValidation = celebrate({
   }),
 });
 
+const checkUserId = celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().required().hex().length(24),
+  }),
+});
+
+const checkCardId = celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().required().hex().length(24),
+  }),
+});
+
 module.exports = {
   regValidation,
   loginValidation,
   avatarValidation,
   createCardValid,
   userValidation,
+  checkUserId,
+  checkCardId,
 };

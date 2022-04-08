@@ -1,6 +1,7 @@
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
 const Card = require('../models/card');
+const NoRightsError = require('../errors/NoRightsError');
 
 const getCards = (req, res, next) => {
   Card.find({})
@@ -12,14 +13,11 @@ const createCard = (req, res, next) => {
   const ownerId = req.user._id;
   Card.create({ name, link, owner: ownerId })
     .then((card) => {
-      if (!card) {
-        next(new BadRequestError('Проверьте введенные данные'));
-      }
       res.status(200).send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError({ message: err.errorMessage }));
+        next(new BadRequestError('Переданы некорректные данные'));
       }
       next(err);
     });
@@ -40,9 +38,6 @@ const likeCard = (req, res, next) => {
       res.status(200).send({ data: card });
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequestError({ message: err.errorMessage }));
-      }
       next(err);
     });
 };
@@ -60,7 +55,7 @@ const dislikeCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError({ message: 'Проверьте введенные данные' }));
+        next(new BadRequestError('Проверьте введенные данные'));
       }
       next(err);
     });
@@ -72,7 +67,7 @@ const deleteCard = (req, res, next) => {
     .orFail(() => new NotFoundError('Карточка не найдена'))
     .then((userCard) => {
       if (!userCard.owner.equals(ownerId)) {
-        return next(new BadRequestError('Нет прав для удаления карточки'));
+        return next(new NoRightsError('Нет прав для удаления карточки'));
       }
       return userCard.remove()
         .then(() => res.status(200).send(userCard));

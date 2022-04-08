@@ -14,10 +14,10 @@ const getUsers = (req, res, next) => {
 
 const getUserMe = (req, res, next) => {
   Users.findById(req.user._id)
+    .orFail(() => {
+      throw new NotFoundError('Пользователь не найден');
+    })
     .then((user) => {
-      if (!user._id) {
-        next(new NotFoundError('Пользователь не найден'));
-      }
       res.status(200).send(user);
     })
     .catch((err) => {
@@ -35,9 +35,6 @@ const getUserById = (req, res, next) => {
       throw new NotFoundError('Пользователь не найден');
     })
     .then((user) => {
-      if (!user._id) {
-        next(new NotFoundError('Пользователь не найден'));
-      }
       res.status(200).send(user);
     })
     .catch((err) => {
@@ -49,6 +46,7 @@ const getUserById = (req, res, next) => {
     });
 };
 
+// create users
 const createUser = (req, res, next) => {
   const {
     name,
@@ -79,19 +77,17 @@ const createUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Проверьте введенные данные.'));
-      } else if (err.code === 11000) {
-        next(new ForbiddenError({ message: err.errorMessage }));
       } else {
         next(err);
       }
     });
 };
-
+// updateUser
 const updateUser = (req, res, next) => {
   const { name, about } = req.body;
   Users.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .orFail(() => {
-      throw new BadRequestError('Проверьте введенные данные');
+      throw new NotFoundError('Пользователь не найден');
     })
     .then((user) => {
       if (!user) {
@@ -140,9 +136,6 @@ const login = (req, res, next) => {
       res.status(200).send({ message: 'Авторизация прошла успешно', token });
     })
     .catch((err) => {
-      if (err.message === 'IncorrectEmail') {
-        next(new Unauthorized('Неправильный логин или пароль'));
-      }
       next(err);
     });
 };
