@@ -48,14 +48,11 @@ const dislikeCard = (req, res, next) => {
       throw new NotFoundError('Карточка не найдена');
     })
     .then((card) => {
-      if (!card) {
-        next(new NotFoundError('Карточка не найдена'));
-      }
       res.status(200).send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('Проверьте введенные данные'));
+        next(new BadRequestError('Переданы некорректные данные'));
       }
       next(err);
     });
@@ -64,13 +61,18 @@ const dislikeCard = (req, res, next) => {
 const deleteCard = (req, res, next) => {
   const ownerId = req.user._id;
   Card.findById(req.params.cardId)
-    .orFail(() => new NotFoundError('Карточка не найдена'))
+    .orFail(() => new NotFoundError('Карточка c данным id не найдена'))
     .then((userCard) => {
       if (!userCard.owner.equals(ownerId)) {
         return next(new NoRightsError('Нет прав для удаления карточки'));
       }
       return userCard.remove()
         .then(() => res.status(200).send(userCard));
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Переданы некорректные данные'));
+      }
     })
     .catch(next);
 };
