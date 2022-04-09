@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const validator = require('validator');
 const Users = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
@@ -43,23 +44,13 @@ const getUserById = (req, res, next) => {
     });
 };
 
-// create users
+// create user
 const createUser = (req, res, next) => {
-  const {
-    name,
-    about,
-    avatar,
-    email,
-    password,
-  } = req.body;
-
-  Users.findOne({ email })
-    .then((user) => {
-      if (user) {
-        next(new ForbiddenError(`Пользователь с таким email ${email} уже зарегистрирован`));
-      }
-      return bcrypt.hash(password, 10);
-    })
+  const { name, about, avatar, email, password } = req.body;
+  if (!email || !password) {
+    next(new BadRequestError('"email" и "password" должны быть заполнены'));
+  }
+  bcrypt.hash(password, 10)
     .then((hash) => Users.create({
       name,
       about,
@@ -67,7 +58,6 @@ const createUser = (req, res, next) => {
       email,
       password: hash,
     }))
-    .then((user) => Users.findOne({ _id: user._id }))
     .then((user) => {
       res.status(200).send(user);
     })
@@ -75,8 +65,8 @@ const createUser = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные'));
       }
-      if (err.name === 'CastError') {
-        next(new BadRequestError('Проверьте введенные данные'));
+      if (err.code === 11000) {
+        next(new ForbiddenError(`Пользователь с таким email ${email} уже зарегистрирован`));
       }
       next(err);
     });
