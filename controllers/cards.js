@@ -29,15 +29,15 @@ const likeCard = (req, res, next) => {
     { new: true },
   )
     .orFail(() => {
-      throw new NotFoundError('Карточка не найдена');
+      throw new NotFoundError('Карточка с данным id не найдена');
     })
     .then((card) => {
-      if (!card) {
-        next(new NotFoundError('Карточка не найдена'));
-      }
       res.status(200).send({ data: card });
     })
     .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Переданы некорректные данные'));
+      }
       next(err);
     });
 };
