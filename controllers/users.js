@@ -48,17 +48,19 @@ const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  if (!email || !password) {
-    next(new BadRequestError('"email" и "password" должны быть заполнены'));
-  }
   bcrypt.hash(password, 10)
-    .then((hash) => Users.create({
-      name,
-      about,
-      avatar,
-      email,
-      password: hash,
-    }))
+    .then((hash) => {
+      if (!email || !password) {
+        next(new BadRequestError('"email" и "password" должны быть заполнены'));
+      }
+      return Users.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hash,
+      });
+    })
     .then((user) => {
       res.status(200).send(user);
     })
