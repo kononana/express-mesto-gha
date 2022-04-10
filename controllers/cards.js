@@ -61,7 +61,7 @@ const dislikeCard = (req, res, next) => {
 const deleteCard = (req, res, next) => {
   const ownerId = req.user._id;
   Card.findById(req.params.cardId)
-    .orFail(() => new NotFoundError('Карточка c данным id не найдена'))
+    .orFail(() => new NotFoundError('Карточка не найдена'))
     .then((userCard) => {
       if (!userCard.owner.equals(ownerId)) {
         return next(new NoRightsError('Нет прав для удаления карточки'));
@@ -73,8 +73,8 @@ const deleteCard = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные'));
       }
-    })
-    .catch(next);
+      next(err);
+    });
 };
 
 module.exports = {

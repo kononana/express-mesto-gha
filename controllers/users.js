@@ -46,27 +46,34 @@ const getUserById = (req, res, next) => {
 // create user
 const createUser = (req, res, next) => {
   const {
-    name, about, avatar, email, password,
+    name,
+    about,
+    avatar,
+    email,
+    password,
   } = req.body;
-  bcrypt.hash(password, 10)
-    .then((hash) => {
-      if (!email || !password) {
-        next(new BadRequestError('"email" и "password" должны быть заполнены'));
+
+  Users.findOne({ email })
+    .then((user) => {
+      if (user) {
+        next(new ForbiddenError(`Пользователь с таким email ${email} уже зарегистрирован`));
       }
-      return Users.create({
-        name,
-        about,
-        avatar,
-        email,
-        password: hash,
-      });
+      return bcrypt.hash(password, 10);
     })
+    .then((hash) => Users.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+
+    }))
     .then((user) => {
       res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные'));
+        next(new BadRequestError('Проверьте введенные данные'));
       }
       if (err.code === 11000) {
         next(new ForbiddenError(`Пользователь с таким email ${email} уже зарегистрирован`));
